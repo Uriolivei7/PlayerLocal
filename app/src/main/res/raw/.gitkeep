@@ -1,0 +1,4 @@
+Agrega tus archivos de audio aqui (.mp3, .wav, .ogg)
+Ejemplo: cancion1.mp3, mi_artista.mp3, etc.
+
+Luego en SongRepository.kt se cargaran automaticamente.

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="spotify_dark">#FF121212</color>
+    <color name="spotify_dark_card">#FF2A2A2A</color>
+    <color name="spotify_green">#FF1DB954</color>
+    <color name="spotify_white">#FFFFFFFF</color>
+    <color name="spotify_gray">#FFFFFFFF</color>
+    <color name="spotify_dark_gray">#FF535353</color>
+    <color name="spotify_black">#FF000000</color>
+</resources>

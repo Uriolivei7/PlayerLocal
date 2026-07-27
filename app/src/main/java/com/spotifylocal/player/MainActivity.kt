@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -61,9 +62,8 @@ class MainActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         adapter = SongAdapter(
             onSongClick = { song ->
-                val index = adapter.currentList.indexOf(song)
-                musicPlayer.setSongs(adapter.currentList)
-                musicPlayer.play(index)
+                Log.d("MainActivity", "Click en canción: ${song.title}, rawResId=${song.rawResId}")
+                musicPlayer.playByResId(song.rawResId)
                 MusicService.startService(this)
                 startActivity(Intent(this, PlayerActivity::class.java))
             },
@@ -126,12 +126,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadSongs() {
-        musicPlayer.refreshSongList(this)
         val songs = SongRepository.loadSongs(this)
+        Log.d("MainActivity", "loadSongs: ${songs.size} canciones cargadas")
+        for (s in songs) {
+            Log.d("MainActivity", "  -> ${s.title} (rawResId=${s.rawResId})")
+        }
         if (songs.isEmpty()) {
             Toast.makeText(this, R.string.no_songs_warning, Toast.LENGTH_LONG).show()
             return
         }
+        musicPlayer.setSongs(songs)
+        musicPlayer.refreshSongList(this)
         adapter.submitList(songs)
         updatePlayerUI()
     }

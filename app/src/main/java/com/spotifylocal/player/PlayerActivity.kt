@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.Gravity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -21,6 +22,7 @@ class PlayerActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private val updateProgressRunnable = object : Runnable {
         override fun run() {
+            updateUI()
             updateSeekBar()
             handler.postDelayed(this, 500)
         }
@@ -158,7 +160,7 @@ class PlayerActivity : AppCompatActivity() {
                 ).apply { setMargins(0, 0, 0, dp8) }
                 setOnClickListener {
                     musicPlayer.setSongs(songs)
-                    musicPlayer.play(i)
+                    musicPlayer.playByResId(song.rawResId)
                     MusicService.startService(this@PlayerActivity)
                     updateUI()
                     dialog.dismiss()
@@ -222,11 +224,12 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun updateUI() {
         val song = musicPlayer.currentSong
+        Log.d("PlayerActivity", "updateUI: currentSong=${song?.title}, rawResId=${song?.rawResId}, playingResId=${musicPlayer.currentlyPlayingResId}, currentIndex=${musicPlayer.currentIndex}")
         if (song != null) {
             binding.tvPlayerTitle.text = song.title
             binding.tvPlayerArtist.text = song.artist
-            binding.seekBar.max = musicPlayer.duration.coerceAtLeast(1)
-            binding.tvTotalTime.text = formatTime(musicPlayer.duration.toLong())
+            binding.seekBar.max = musicPlayer.currentDuration.coerceAtLeast(1)
+            binding.tvTotalTime.text = formatTime(musicPlayer.currentDuration.toLong())
         }
         updateNextUp()
         updatePlayPauseIcon()
@@ -234,11 +237,19 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun updateNextUp() {
         val songs = musicPlayer.songList
-        if (songs.isEmpty() || musicPlayer.currentIndex < 0) {
+        val currentResId = musicPlayer.currentlyPlayingResId
+        Log.d("PlayerActivity", "updateNextUp: songs=${songs.size}, currentResId=$currentResId, currentIndex=${musicPlayer.currentIndex}")
+        if (songs.isEmpty() || currentResId < 0) {
             binding.tvNextUp.text = ""
             return
         }
-        val nextIndex = (musicPlayer.currentIndex + 1) % songs.size
+        val currentIdx = songs.indexOfFirst { it.rawResId == currentResId }
+        Log.d("PlayerActivity", "updateNextUp: currentIdx=$currentIdx")
+        if (currentIdx < 0) {
+            binding.tvNextUp.text = ""
+            return
+        }
+        val nextIndex = (currentIdx + 1) % songs.size
         val nextSong = songs.getOrNull(nextIndex)
         val currentSong = musicPlayer.currentSong
         binding.tvNextUp.text = if (nextSong != null && nextSong != currentSong) {
@@ -250,8 +261,10 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun updateSeekBar() {
         if (!isSeeking) {
-            binding.seekBar.progress = musicPlayer.currentPosition
-            binding.tvCurrentTime.text = formatTime(musicPlayer.currentPosition.toLong())
+            val song = musicPlayer.currentSong
+            val pos = if (song != null) musicPlayer.currentPosition.toLong().coerceAtMost(song.durationMs) else 0L
+            binding.seekBar.progress = pos.toInt()
+            binding.tvCurrentTime.text = formatTime(pos)
         }
     }
 

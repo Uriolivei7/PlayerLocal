@@ -2,6 +2,7 @@ package com.spotifylocal.player
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.util.Log
 
 object SongRepository {
 
@@ -18,6 +19,7 @@ object SongRepository {
                 val customName = prefs.getString("name_$resId", null)
                 val title = customName ?: defaultTitle
 
+                Log.d("SongRepository", "Cargando: resName=$resName, resId=$resId, title=$title")
                 val mp = MediaPlayer.create(context, resId)
                 val duration = mp.duration.toLong()
                 mp.release()
